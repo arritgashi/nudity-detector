@@ -27,6 +27,8 @@ COPY integrations/ ./integrations/
 # - Falconsai via transformers cache warm-up
 RUN python download_models.py
 RUN python -c "from nsfw_classifier import NSFWClassifier; NSFWClassifier()"
+# The models above are the ones that run: no updates from the internet at startup.
+ENV HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 
 # Default: run the FastAPI moderation service. Override CMD to run the UI.
 EXPOSE 8000

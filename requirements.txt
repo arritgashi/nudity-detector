@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 nudenet>=3.4.2
 gradio>=5.49.0
 opencv-python>=4.9.0
