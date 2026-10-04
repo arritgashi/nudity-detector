@@ -97,8 +97,8 @@ Returns the active thresholds. Useful for debugging "why was X blocked?".
 ### `POST /check`
 Multipart upload, field name `file`. Returns the JSON shown above.
 
-### `POST /check_url`
-JSON body `{"url": "https://..."}`. Use this if your app stores uploads in S3 — send the S3 URL directly instead of re-uploading bytes.
+Only JPEG is accepted (`MOD_FORMATS`), one frame, at most `MOD_MAX_SIDE` pixels a side (2048): other formats get 415, larger images 413.
+`POST /check_url` was removed: it could be pointed at addresses inside the server.
 
 ## Verdict semantics
 

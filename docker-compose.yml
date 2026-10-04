@@ -13,9 +13,18 @@ services:
     image: moderationkit:latest
     container_name: moderationkit-api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"   # only through the web server in front, which checks the key
+    tmpfs:
+      - /tmp                    # checked photos never land on disk
+    mem_limit: 3g
     environment:
-      MOD_INFERENCE_RESOLUTION: "1024"
+      # Profile photos are small (256x256): checking them at 640, the size the detector was
+      # trained at, avoids the false alarms from enlarging them 4x, and is 2.5x faster.
+      MOD_INFERENCE_RESOLUTION: "640"
+      MOD_DROP_BY_FACE: "false"
+      MOD_CONFLICT_IOU: "1.01"
+      MOD_FORMATS: "JPEG"
+      MOD_MAX_SIDE: "2048"
       MOD_DISPLAY_THRESHOLD: "0.15"
       MOD_NSFW_BLOCK: "0.70"
       MOD_NSFW_REVIEW: "0.30"
@@ -36,7 +45,8 @@ services:
     container_name: moderationkit-ui
     depends_on:
       - api
+    profiles: ["manual"]        # the UI has no key; start it only on purpose, locally
     ports:
-      - "7860:7860"
+      - "127.0.0.1:7860:7860"
     command: ["python", "app.py", "--host", "0.0.0.0"]
     restart: unless-stopped

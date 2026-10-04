@@ -215,7 +215,9 @@ def _postprocess(
     if not boxes:
         return []
 
-    indices = cv2.dnn.NMSBoxes(boxes, scores, nms_threshold, nms_iou)
+    # Per class: an EXPOSED box must not be removed because a COVERED box of another
+    # class overlaps it with a higher score.
+    indices = cv2.dnn.NMSBoxesBatched(boxes, scores, class_ids, nms_threshold, nms_iou)
     detections: list[Detection] = []
     for i in np.array(indices).flatten():
         x, y, w, h = boxes[i]
