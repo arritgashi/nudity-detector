@@ -29,6 +29,8 @@ from transformers import pipeline
 
 
 DEFAULT_MODEL = "Falconsai/nsfw_image_detection"
+# The exact model version that was tested; a new upload to Hugging Face is not taken by itself.
+DEFAULT_REVISION = os.environ.get("MOD_CLASSIFIER_REVISION", "96cb0d0342c7afb80cab76ecc58b265fa44da256")
 
 
 @dataclass
@@ -54,6 +56,7 @@ class NSFWClassifier:
         self._pipe = pipeline(
             "image-classification",
             model=model_name,
+            revision=DEFAULT_REVISION,
             device=-1,
         )
         self.model_name = model_name
@@ -73,6 +76,9 @@ class NSFWClassifier:
 
         raw = self._pipe(pil)
         labels = {item["label"].lower(): float(item["score"]) for item in raw}
+        # A model whose labels changed would score every image 0 (safe). Fail instead.
+        if not labels.keys() & {"nsfw", "porn", "explicit", "hentai", "sexy"}:
+            raise RuntimeError(f"Unexpected classifier labels: {sorted(labels)}")
 
         # Falconsai returns "nsfw" / "normal". Be tolerant of other label names.
         nsfw = labels.get("nsfw") or labels.get("porn") or labels.get("explicit") or 0.0
